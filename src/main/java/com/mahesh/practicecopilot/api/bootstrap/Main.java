@@ -20,7 +20,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         HttpServer server = startServer();
         System.out.println("JAX-RS API started at " + baseUri.toString());
-        System.out.println("Health endpoint: " + baseUri.toString() + "health");
+        System.out.println("Customer endpoint: " + baseUri.toString() + "customers");
         System.in.read();
         server.shutdownNow();
     }

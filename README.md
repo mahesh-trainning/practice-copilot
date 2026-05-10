@@ -30,10 +30,8 @@ practice-copilot/
 					CustomerResourceBean.java
 					CustomerResourceRequest.java
 					CustomerResourceResponse.java
-					HealthResponse.java
 				resources/
 					CustomerResource.java
-					HealthResource.java
 				store/
 					CustomerStore.java
 			resources/
@@ -41,7 +39,7 @@ practice-copilot/
 				customers.csv
 		test/
 			java/com/mahesh/practicecopilot/api/resources/
-				HealthResourceTest.java
+				CustomerResourceTest.java
 	pom.xml
 ```
 
@@ -57,19 +55,6 @@ Server base URL:
 - `http://localhost:8080/api`
 
 ## APIs
-
-### Health
-
-- `GET /api/health`
-
-Response:
-
-```json
-{
-	"status": "UP",
-	"service": "practice-copilot-api"
-}
-```
 
 ### Customer CRUD
 
