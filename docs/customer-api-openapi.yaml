@@ -1,0 +1,199 @@
+openapi: 3.0.3
+info:
+  title: Practice Copilot Customer API
+  version: 1.0.0
+  description: Customer CRUD APIs for the JAX-RS service.
+servers:
+  - url: http://localhost:8080/api
+    description: Local
+paths:
+  /customers/:
+    get:
+      tags: [Customers]
+      summary: Get all customers
+      operationId: getAllCustomers
+      responses:
+        '200':
+          description: Customer list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResourceResponse'
+              examples:
+                success:
+                  value:
+                    customers:
+                      - id: 1
+                        name: Alice Johnson
+                        email: alice@example.com
+                        phone: "9876543210"
+                        address: 123 Main St
+                        createdDate: "2026-05-10T10:30:00"
+
+    post:
+      tags: [Customers]
+      summary: Create customer
+      operationId: createCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerResourceRequest'
+            examples:
+              createRequest:
+                value:
+                  customerResourceBean:
+                    id: 101
+                    name: John Doe
+                    email: john.doe@example.com
+                    phone: "9876543210"
+                    address: Bangalore
+      responses:
+        '201':
+          description: Customer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResourceBean'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /customers/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+    get:
+      tags: [Customers]
+      summary: Get customer by id
+      operationId: getCustomerById
+      responses:
+        '200':
+          description: Customer found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResourceBean'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags: [Customers]
+      summary: Update customer by id
+      operationId: updateCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerResourceRequest'
+            examples:
+              updateRequest:
+                value:
+                  customerResourceBean:
+                    id: 101
+                    name: John Updated
+                    email: john.updated@example.com
+                    phone: "9123456789"
+                    address: Chennai
+      responses:
+        '200':
+          description: Customer updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResourceBean'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags: [Customers]
+      summary: Delete customer by id
+      operationId: deleteCustomer
+      responses:
+        '204':
+          description: Deleted successfully
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CustomerResourceBean:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Mandatory
+        name:
+          type: string
+          description: Mandatory
+        email:
+          type: string
+          description: Optional, valid email format if provided
+          example: user@example.com
+        phone:
+          type: string
+          description: Optional, must be exactly 10 digits if provided
+          pattern: '^[0-9]{10}$'
+          example: "9876543210"
+        address:
+          type: string
+          description: Optional
+        createdDate:
+          type: string
+          format: date-time
+          description: Server managed. Request value is ignored.
+      required:
+        - id
+        - name
+
+    CustomerResourceRequest:
+      type: object
+      properties:
+        customerResourceBean:
+          $ref: '#/components/schemas/CustomerResourceBean'
+      required:
+        - customerResourceBean
+
+    CustomerResourceResponse:
+      type: object
+      properties:
+        customers:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerResourceBean'
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message

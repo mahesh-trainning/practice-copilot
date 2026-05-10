@@ -54,24 +54,55 @@ public class CustomerStore {
     }
 
     public CustomerResourceBean create(CustomerResourceBean bean) {
-        long newId = idSequence.incrementAndGet();
-        bean.setId(newId);
-        if (bean.getCreatedDate() == null) {
-            bean.setCreatedDate(LocalDateTime.now());
+        if (bean.getId() == null) {
+            throw new IllegalArgumentException("id is mandatory");
         }
-        store.put(newId, bean);
+
+        long id = bean.getId();
+        if (store.containsKey(id)) {
+            throw new IllegalArgumentException("Customer already exists with id: " + id);
+        }
+
+        // Ignore request.createdDate and always set server-side creation timestamp.
+        CustomerResourceBean toStore = new CustomerResourceBean(
+            id,
+            bean.getName(),
+            bean.getEmail(),
+            bean.getPhone(),
+            bean.getAddress(),
+            LocalDateTime.now()
+        );
+        store.put(id, toStore);
+        if (id > idSequence.get()) {
+            idSequence.set(id);
+        }
         saveToDisk();
-        return bean;
+        return toStore;
     }
 
     public Optional<CustomerResourceBean> update(Long id, CustomerResourceBean updated) {
         if (!store.containsKey(id)) {
             return Optional.empty();
         }
-        updated.setId(id);
-        store.put(id, updated);
+        CustomerResourceBean existing = store.get(id);
+        LocalDateTime createdDate =
+            (existing != null && existing.getCreatedDate() != null)
+                ? existing.getCreatedDate()
+                : LocalDateTime.now();
+
+        // Ignore request.createdDate and keep/pin a non-null server-side creation time.
+        CustomerResourceBean toStore = new CustomerResourceBean(
+            id,
+            updated.getName(),
+            updated.getEmail(),
+            updated.getPhone(),
+            updated.getAddress(),
+            createdDate
+        );
+
+        store.put(id, toStore);
         saveToDisk();
-        return Optional.of(updated);
+        return Optional.of(toStore);
     }
 
     public boolean delete(Long id) {
@@ -112,13 +143,18 @@ public class CustomerStore {
 
     private CustomerResourceBean parseLine(String line) {
         String[] p = line.split(",", -1);
+        LocalDateTime createdDate =
+            (p.length > 5 && !p[5].trim().isEmpty())
+                ? LocalDateTime.parse(p[5].trim())
+                : LocalDateTime.now();
+
         return new CustomerResourceBean(
             Long.parseLong(p[0].trim()),
             p[1].trim(),
             p[2].trim(),
             p[3].trim(),
             p[4].trim(),
-            LocalDateTime.parse(p[5].trim())
+            createdDate
         );
     }
 
